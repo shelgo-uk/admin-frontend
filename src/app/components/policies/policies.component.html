@@ -1,0 +1,154 @@
+<app-breadcrumb [pageName]="'Policies / CMS'" [icon]="'file-lines'" />
+
+<div class="policies-layout">
+
+    <!-- ── Left: Policy picker ── -->
+    <aside class="policies-sidebar">
+        <div class="policies-sidebar-title">Policy Pages</div>
+        <div class="policies-sidebar-list">
+            <button class="policies-sidebar-item"
+                *ngFor="let item of slugs"
+                [class.active]="selectedSlug === item.slug"
+                (click)="selectPolicy(item)">
+                <span class="policies-sidebar-icon">
+                    <span><i class="fa-light fa-file-lines"></i></span>
+                </span>
+                <span class="policies-sidebar-name">{{ item.label }}</span>
+                <span class="policies-sidebar-arrow">
+                    <span><i class="fa-light fa-chevron-right"></i></span>
+                </span>
+            </button>
+        </div>
+    </aside>
+
+    <!-- ── Right: Editor ── -->
+    <main class="policies-main">
+
+        <app-box-view-skeleton *ngIf="isLoading"></app-box-view-skeleton>
+
+        <div class="policies-editor" *ngIf="!isLoading">
+
+            <!-- Header -->
+            <div class="policies-editor-header">
+                <div>
+                    <h2 class="policies-editor-title">{{ selectedLabel }}</h2>
+                    <span class="policies-editor-url">
+                        UI URL: /policy/{{ selectedSlug }}
+                    </span>
+                </div>
+                <button class="site-btn primary-color policies-save-btn"
+                    (click)="save()" [disabled]="isSaving">
+                    <span class="site-btn-icon">
+                        <span><i *ngIf="!isSaving" class="fa-light fa-floppy-disk"></i></span>
+                        <span><i *ngIf="isSaving" class="fa-light fa-spinner-third fa-spin"></i></span>
+                    </span>
+                    {{ isSaving ? 'Saving...' : 'Save Policy' }}
+                </button>
+            </div>
+
+            <!-- Meta fields -->
+            <div class="policies-card">
+                <div class="policies-card-head">
+                    <span class="policies-card-title">
+                        <span><i class="fa-light fa-circle-info"></i></span>
+                        Page Info
+                    </span>
+                </div>
+                <div class="policies-card-body">
+                    <div class="policies-fields-row">
+                        <div class="form-inp-main">
+                            <label class="form-label">Page Title</label>
+                            <input class="form-control" type="text"
+                                placeholder="e.g. Shipping Policy"
+                                [(ngModel)]="policy.title" />
+                        </div>
+                        <div class="form-inp-main">
+                            <label class="form-label">Last Updated</label>
+                            <input class="form-control" type="text"
+                                placeholder="e.g. January 2026"
+                                [(ngModel)]="policy.lastUpdated" />
+                            <small class="text-muted" style="font-size:11px;padding-left:4px">
+                                Shown below the title on the page
+                            </small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Sections -->
+            <div class="policies-sections-header">
+                <span class="policies-sections-label">
+                    Accordion Sections
+                    <span class="policies-sections-count">{{ policy.sections.length }}</span>
+                </span>
+                <button class="site-btn outline-btn" (click)="addSection()">
+                    <span class="site-btn-icon">
+                        <span><i class="fa-light fa-plus"></i></span>
+                    </span>
+                    Add Section
+                </button>
+            </div>
+
+            <!-- Section cards -->
+            <div class="policies-section-card"
+                *ngFor="let sec of policy.sections; let si = index">
+
+                <div class="policies-section-head">
+                    <span class="policies-section-num">Section {{ si + 1 }}</span>
+                    <div class="policies-section-actions">
+                        <button class="cpb-icon-btn" (click)="moveSectionUp(si)"
+                            [disabled]="si === 0" title="Move Up">
+                            <span><i class="fa-light fa-arrow-up"></i></span>
+                        </button>
+                        <button class="cpb-icon-btn" (click)="moveSectionDown(si)"
+                            [disabled]="si === policy.sections.length - 1" title="Move Down">
+                            <span><i class="fa-light fa-arrow-down"></i></span>
+                        </button>
+                        <button class="cpb-icon-btn danger" (click)="removeSection(si)" title="Remove">
+                            <span><i class="fa-light fa-trash-can"></i></span>
+                        </button>
+                    </div>
+                </div>
+
+                <div class="policies-section-body">
+                    <div class="form-inp-main mb-3">
+                        <label class="form-label">Section Heading</label>
+                        <input class="form-control" type="text"
+                            placeholder="e.g. Delivery Options"
+                            [(ngModel)]="sec.heading" />
+                    </div>
+                    <div class="form-inp-main">
+                        <label class="form-label">Content</label>
+                        <st-editor [(ngModel)]="sec.content"
+                            [config]="{ placeholder: 'Enter section content...' }">
+                        </st-editor>
+                        <small class="text-muted" style="font-size:11px;padding-left:4px">
+                            Supports basic HTML formatting
+                        </small>
+                    </div>
+                </div>
+
+            </div>
+
+            <!-- Empty state -->
+            <div class="policies-sections-empty" *ngIf="policy.sections.length === 0">
+                <span><i class="fa-light fa-plus-circle"></i></span>
+                <p>No sections yet. Click "Add Section" to start building this policy page.</p>
+            </div>
+
+            <!-- Save bottom -->
+            <div class="policies-save-bottom">
+                <button class="site-btn primary-color" style="min-width:200px;height:48px"
+                    (click)="save()" [disabled]="isSaving">
+                    <span class="site-btn-icon">
+                        <span><i *ngIf="!isSaving" class="fa-light fa-floppy-disk"></i></span>
+                        <span><i *ngIf="isSaving" class="fa-light fa-spinner-third fa-spin"></i></span>
+                    </span>
+                    {{ isSaving ? 'Saving...' : 'Save Policy' }}
+                </button>
+            </div>
+
+        </div>
+    </main>
+
+</div>

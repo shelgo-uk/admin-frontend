@@ -1,0 +1,309 @@
+<app-breadcrumb [pageName]="'Category Page Builder'" [icon]="'layer-group'" />
+
+<div class="cpb-layout">
+
+    <!-- ══ LEFT: Category Picker ══ -->
+    <aside class="cpb-sidebar">
+        <div class="cpb-sidebar-title">Root Categories</div>
+        <div class="cpb-sidebar-sub">Select a category to configure its landing page</div>
+        <div class="cpb-cat-list">
+            <div class="cpb-cat-item"
+                *ngFor="let cat of rootCategories"
+                [class.active]="selectedCategoryId === cat.id"
+                (click)="selectCategory(cat)">
+                <div class="cpb-cat-img">
+                    <img *ngIf="cat.image" [src]="cat.image" [alt]="cat.name" />
+                    <span *ngIf="!cat.image"><i class="fa-light fa-folder"></i></span>
+                </div>
+                <div class="cpb-cat-info">
+                    <span class="cpb-cat-name">{{ cat.name }}</span>
+                    <span class="cpb-cat-slug">/category/{{ toSlug(cat.name) }}</span>
+                </div>
+                <span class="cpb-cat-arrow"><i class="fa-light fa-chevron-right"></i></span>
+            </div>
+            <div class="cpb-cat-empty" *ngIf="rootCategories.length === 0">
+                No root categories found. Create categories first.
+            </div>
+        </div>
+    </aside>
+
+    <!-- ══ RIGHT: Builder ══ -->
+    <main class="cpb-main">
+
+        <!-- No category selected -->
+        <div class="cpb-empty-state" *ngIf="!selectedCategory">
+            <span><i class="fa-light fa-layer-group"></i></span>
+            <p>Select a root category from the left to start building its landing page.</p>
+        </div>
+
+        <!-- Loading -->
+        <app-box-view-skeleton *ngIf="isLoading && selectedCategory"></app-box-view-skeleton>
+
+        <!-- Builder form -->
+        <div class="cpb-builder" *ngIf="!isLoading && selectedCategory">
+
+            <!-- Header -->
+            <div class="cpb-builder-header">
+                <div>
+                    <h2 class="cpb-builder-title">{{ selectedCategory.name | uppercase }}</h2>
+                    <span class="cpb-builder-url">UI URL: /category/{{ toSlug(selectedCategory.name) }}</span>
+                </div>
+                <button class="site-btn primary-color cpb-save-btn" (click)="save()" [disabled]="isSaving">
+                    <span class="site-btn-icon">
+                        <span *ngIf="!isSaving"><i class="fa-light fa-floppy-disk"></i></span>
+                        <span *ngIf="isSaving"><i class="fa-light fa-spinner-third fa-spin"></i></span>
+                    </span>
+                    {{ isSaving ? 'Saving...' : 'Save Page' }}
+                </button>
+            </div>
+
+            <!-- ── HERO BANNER ── -->
+            <div class="cpb-card">
+                <div class="cpb-card-head">
+                    <span class="cpb-card-title">
+                        <span><i class="fa-light fa-image"></i></span>
+                        Hero Banner
+                    </span>
+                    <span class="cpb-card-badge">Top of page</span>
+                </div>
+                <div class="cpb-card-body">
+
+                    <!-- Image upload -->
+                    <div class="cpb-img-area">
+                        <div class="cpb-img-preview" *ngIf="config.heroBanner.url">
+                            <img [src]="config.heroBanner.url" alt="Hero Banner"
+                                (click)="sharedService.viewImage(config.heroBanner.url)" />
+                            <div class="cpb-img-actions">
+                                <button class="cpb-img-btn" (click)="uploadHeroImage()">
+                                    <span><i class="fa-light fa-arrow-up-from-bracket"></i></span> Change
+                                </button>
+                                <button class="cpb-img-btn remove" (click)="removeHeroImage()">
+                                    <span><i class="fa-light fa-trash-can"></i></span> Remove
+                                </button>
+                            </div>
+                        </div>
+                        <div class="cpb-img-upload" *ngIf="!config.heroBanner.url"
+                            (click)="uploadHeroImage()">
+                            <span><i class="fa-light fa-cloud-arrow-up"></i></span>
+                            <span>Click to upload hero image</span>
+                            <small>Recommended: 1400×520px</small>
+                        </div>
+                    </div>
+
+                    <!-- Hero fields -->
+                    <div class="cpb-fields-grid">
+                        <div class="form-inp-main">
+                            <label class="form-label">Overlay Title</label>
+                            <input class="form-control" type="text" placeholder="e.g. NEW IN WOMEN"
+                                [(ngModel)]="config.heroBanner.title" />
+                        </div>
+                        <div class="form-inp-main">
+                            <label class="form-label">Subtitle</label>
+                            <input class="form-control" type="text" placeholder="e.g. Discover the latest styles"
+                                [(ngModel)]="config.heroBanner.subtitle" />
+                        </div>
+                        <div class="form-inp-main">
+                            <label class="form-label">Button Text</label>
+                            <input class="form-control" type="text" placeholder="e.g. SHOP NOW"
+                                [(ngModel)]="config.heroBanner.btnText" />
+                        </div>
+                        <div class="form-inp-main">
+                            <label class="form-label">Button / Click Link</label>
+                            <input class="form-control" type="text" placeholder="e.g. /shop?categoryId=1"
+                                [(ngModel)]="config.heroBanner.link" />
+                        </div>
+                        <div class="form-inp-main">
+                            <label class="form-label">Text Alignment</label>
+                            <select class="form-control" [(ngModel)]="config.heroBanner.align">
+                                <option value="left">Left</option>
+                                <option value="center">Center</option>
+                                <option value="right">Right</option>
+                            </select>
+                        </div>
+                        <div class="form-inp-main">
+                            <label class="form-label">Featured Products Title</label>
+                            <input class="form-control" type="text" placeholder="e.g. NEW IN WOMEN"
+                                [(ngModel)]="config.featuredTitle" />
+                            <small class="text-muted" style="font-size:11px;padding-left:4px">
+                                Title shown above the featured products grid
+                            </small>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+
+            <!-- ── SECTIONS ── -->
+            <div class="cpb-sections-header">
+                <span class="cpb-sections-label">Page Sections</span>
+                <div class="cpb-add-section-row">
+                    <span class="cpb-add-label">Add Section:</span>
+                    <button class="cpb-add-btn" *ngFor="let t of sectionTypes" (click)="addSection(t.value)">
+                        <span><i class="fa-light fa-plus"></i></span> {{ t.label }}
+                    </button>
+                </div>
+            </div>
+
+            <!-- Section cards -->
+            <div class="cpb-section-card" *ngFor="let section of config.sections; let si = index">
+
+                <div class="cpb-section-head">
+                    <span class="cpb-section-type-badge">{{ section.type }}</span>
+                    <div class="cpb-section-actions">
+                        <button class="cpb-icon-btn" (click)="moveSectionUp(si)" [disabled]="si === 0" title="Move Up">
+                            <span><i class="fa-light fa-arrow-up"></i></span>
+                        </button>
+                        <button class="cpb-icon-btn" (click)="moveSectionDown(si)"
+                            [disabled]="si === config.sections.length - 1" title="Move Down">
+                            <span><i class="fa-light fa-arrow-down"></i></span>
+                        </button>
+                        <button class="cpb-icon-btn danger" (click)="removeSection(si)" title="Remove">
+                            <span><i class="fa-light fa-trash-can"></i></span>
+                        </button>
+                    </div>
+                </div>
+
+                <div class="cpb-section-body">
+
+                    <!-- Common: title + link -->
+                    <div class="cpb-fields-grid" *ngIf="section.type !== 'sub_category_links'">
+                        <div class="form-inp-main">
+                            <label class="form-label">Section Title</label>
+                            <input class="form-control" type="text" placeholder="e.g. SHOP BY STYLE"
+                                [(ngModel)]="section.title" />
+                        </div>
+                        <div class="form-inp-main" *ngIf="section.type === 'banner_grid'">
+                            <label class="form-label">Link Text</label>
+                            <input class="form-control" type="text" placeholder="e.g. View All"
+                                [(ngModel)]="section.linkText" />
+                        </div>
+                        <div class="form-inp-main" *ngIf="section.type === 'banner_grid'">
+                            <label class="form-label">Link URL</label>
+                            <input class="form-control" type="text" placeholder="e.g. /shop?categoryId=1"
+                                [(ngModel)]="section.linkUrl" />
+                        </div>
+                    </div>
+
+                    <!-- BANNER GRID -->
+                    <ng-container *ngIf="section.type === 'banner_grid'">
+                        <div class="form-inp-main mb-3">
+                            <label class="form-label">Number of Columns</label>
+                            <select class="form-control" style="max-width:160px"
+                                [(ngModel)]="section.cols" (ngModelChange)="onColsChange(section)">
+                                <option [value]="1">1 Column (Full Width)</option>
+                                <option [value]="2">2 Columns (Half + Half)</option>
+                                <option [value]="3">3 Columns</option>
+                                <option [value]="4">4 Columns</option>
+                            </select>
+                        </div>
+                        <div class="cpb-banners-grid" [class]="'cols-' + section.cols">
+                            <div class="cpb-banner-slot" *ngFor="let b of section.banners; let bi = index">
+                                <div class="cpb-slot-label">Banner {{ bi + 1 }}</div>
+                                <div class="cpb-img-area cpb-img-area-sm">
+                                    <div class="cpb-img-preview" *ngIf="b.url">
+                                        <img [src]="b.url" alt="Banner" />
+                                        <div class="cpb-img-actions">
+                                            <button class="cpb-img-btn" (click)="uploadBannerImage(section, bi)">
+                                                <span><i class="fa-light fa-arrow-up-from-bracket"></i></span> Change
+                                            </button>
+                                            <button class="cpb-img-btn remove" (click)="removeBannerImage(section, bi)">
+                                                <span><i class="fa-light fa-trash-can"></i></span>
+                                            </button>
+                                        </div>
+                                    </div>
+                                    <div class="cpb-img-upload" *ngIf="!b.url"
+                                        (click)="uploadBannerImage(section, bi)">
+                                        <span><i class="fa-light fa-cloud-arrow-up"></i></span>
+                                        <span>Upload Image</span>
+                                    </div>
+                                </div>
+                                <div class="form-inp-main mb-2">
+                                    <label class="form-label">Label</label>
+                                    <input class="form-control" type="text" placeholder="e.g. Dresses"
+                                        [(ngModel)]="b.label" />
+                                </div>
+                                <div class="form-inp-main mb-2">
+                                    <label class="form-label">Button Text</label>
+                                    <input class="form-control" type="text" placeholder="e.g. SHOP NOW"
+                                        [(ngModel)]="b.btnText" />
+                                </div>
+                                <div class="form-inp-main">
+                                    <label class="form-label">Click Link</label>
+                                    <input class="form-control" type="text" placeholder="e.g. /shop?categoryId=5"
+                                        [(ngModel)]="b.link" />
+                                </div>
+                            </div>
+                        </div>
+                    </ng-container>
+
+                    <!-- TEXT BANNER -->
+                    <ng-container *ngIf="section.type === 'text_banner'">
+                        <div class="cpb-fields-grid">
+                            <div class="form-inp-main">
+                                <label class="form-label">Body Text</label>
+                                <textarea class="form-control" rows="3" placeholder="Description..."
+                                    [(ngModel)]="section.body"></textarea>
+                            </div>
+                            <div class="form-inp-main">
+                                <label class="form-label">Button Text</label>
+                                <input class="form-control" type="text" placeholder="e.g. SHOP NOW"
+                                    [(ngModel)]="section.btnText" />
+                            </div>
+                            <div class="form-inp-main">
+                                <label class="form-label">Button Link</label>
+                                <input class="form-control" type="text" placeholder="e.g. /shop"
+                                    [(ngModel)]="section.btnLink" />
+                            </div>
+                            <div class="form-inp-main">
+                                <label class="form-label">Background Color</label>
+                                <div class="cpb-color-row">
+                                    <input type="color" [(ngModel)]="section.bgColor" class="cpb-color-input" />
+                                    <input class="form-control" type="text" [(ngModel)]="section.bgColor"
+                                        style="max-width:120px" />
+                                </div>
+                            </div>
+                            <div class="form-inp-main">
+                                <label class="form-label">Text Color</label>
+                                <div class="cpb-color-row">
+                                    <input type="color" [(ngModel)]="section.textColor" class="cpb-color-input" />
+                                    <input class="form-control" type="text" [(ngModel)]="section.textColor"
+                                        style="max-width:120px" />
+                                </div>
+                            </div>
+                        </div>
+                    </ng-container>
+
+                    <!-- SUB CATEGORY LINKS -->
+                    <ng-container *ngIf="section.type === 'sub_category_links'">
+                        <div class="cpb-info-box">
+                            <span><i class="fa-light fa-circle-info"></i></span>
+                            This section automatically renders all sub-categories and their children as a link grid.
+                            No configuration needed.
+                        </div>
+                    </ng-container>
+
+                </div>
+            </div>
+
+            <!-- Empty sections -->
+            <div class="cpb-sections-empty" *ngIf="config.sections.length === 0">
+                <span><i class="fa-light fa-plus-circle"></i></span>
+                <p>No sections yet. Use the buttons above to add sections to this page.</p>
+            </div>
+
+            <!-- Save button bottom -->
+            <div class="cpb-save-bottom">
+                <button class="site-btn primary-color" style="min-width:200px;height:48px"
+                    (click)="save()" [disabled]="isSaving">
+                    <span class="site-btn-icon">
+                        <span><i *ngIf="!isSaving" class="fa-light fa-floppy-disk"></i></span>
+                        <span><i *ngIf="isSaving" class="fa-light fa-spinner-third fa-spin"></i></span>
+                    </span>
+                    {{ isSaving ? 'Saving...' : 'Save Page' }}
+                </button>
+            </div>
+
+        </div>
+    </main>
+
+</div>

@@ -1,0 +1,62 @@
+<div class="page-wrapper">
+    <div class="page-header">
+        <h1 class="page-title">Payment Settings</h1>
+    </div>
+
+    <div class="page-loading" *ngIf="isLoading">
+        <span><i class="fa-light fa-spinner-third fa-spin"></i></span> Loading...
+    </div>
+
+    <div class="settings-card" *ngIf="!isLoading">
+
+        <div class="settings-section">
+            <h2 class="settings-section-title">Razorpay Configuration</h2>
+
+            <div class="settings-field">
+                <label class="settings-label">Razorpay Key ID <span class="required">*</span></label>
+                <input class="settings-input" type="text" placeholder="rzp_test_..." [(ngModel)]="settings.razorpayKeyId" />
+                <p class="settings-hint">Your Razorpay publishable key (starts with rzp_test_ or rzp_live_)</p>
+            </div>
+
+            <div class="settings-field">
+                <label class="settings-label">Razorpay Key Secret <span class="required">*</span></label>
+                <input class="settings-input" type="password" placeholder="Enter secret key" [(ngModel)]="settings.razorpayKeySecret" />
+                <p class="settings-hint">Keep this secret. Never share it publicly.</p>
+            </div>
+        </div>
+
+        <div class="settings-section">
+            <h2 class="settings-section-title">Mode &amp; Status</h2>
+
+            <div class="settings-toggle-row">
+                <div class="settings-toggle-info">
+                    <span class="settings-toggle-label">Test Mode</span>
+                    <span class="settings-toggle-desc">Use Razorpay test environment (no real charges)</span>
+                </div>
+                <label class="toggle-switch">
+                    <input type="checkbox" [(ngModel)]="settings.isTestMode" />
+                    <span class="toggle-slider"></span>
+                </label>
+            </div>
+
+            <div class="settings-toggle-row">
+                <div class="settings-toggle-info">
+                    <span class="settings-toggle-label">Active</span>
+                    <span class="settings-toggle-desc">Enable Razorpay payment on the storefront</span>
+                </div>
+                <label class="toggle-switch">
+                    <input type="checkbox" [(ngModel)]="settings.isActive" />
+                    <span class="toggle-slider"></span>
+                </label>
+            </div>
+        </div>
+
+        <div class="settings-footer">
+            <button class="settings-save-btn" [disabled]="isSaving" (click)="saveSettings()">
+                <span *ngIf="!isSaving">SAVE SETTINGS</span>
+                <span *ngIf="isSaving"><span><i class="fa-light fa-spinner-third fa-spin"></i></span> Saving...</span>
+            </button>
+        </div>
+
+    </div>
+</div>

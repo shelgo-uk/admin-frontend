@@ -1,0 +1,130 @@
+<app-breadcrumb [pageName]="'Site Configuration'" [icon]="'gears'" />
+@if(isDataLoaded){
+    <div class="page-table-ttl">
+        Site Setting
+    </div>
+    <div class="page-table-main">
+        <div class="row m-0 p-0">
+            <div class="col-lg-4 col-12 mb-2">
+                <div class="uploaded-img-main">
+                    @if(siteConfig.logo){
+                        <img [src]="siteConfig.logo" alt="logo" class="uploaded-img" />
+                    }
+                </div>
+                <div class="form-inp-main">
+                    <label class="form-label">Logo</label>
+                    <button type="button" class="site-btn w-100 primary-color" (click)="uploadImage()">Upload</button>
+                </div>
+            </div>
+            <div class="col-lg-4 col-12 mb-2">
+                <div class="uploaded-img-main">
+                    @if(siteConfig.whiteLogo){
+                        <img [src]="siteConfig.whiteLogo" alt="whiteLogo" class="uploaded-img" />
+                    }
+                </div>
+                <div class="form-inp-main">
+                    <label class="form-label">White Logo</label>
+                    <button type="button" class="site-btn w-100 primary-color" (click)="uploadwhiteLogo()">Upload</button>
+                </div>
+            </div>
+            <div class="col-lg-4 col-12 mb-2">
+                <div class="uploaded-img-main">
+                    @if(siteConfig.icon){
+                        <img [src]="siteConfig.icon" alt="icon" class="uploaded-img" />
+                    }
+                </div>
+                <div class="form-inp-main">
+                    <label class="form-label">Favicon (512 x 512)</label>
+                    <button type="button" class="site-btn w-100 primary-color" (click)="uploadIcon()">Upload</button>
+                </div>
+            </div>
+            <div class="col-12 mb-2">
+                <div class="form-inp-main">
+                    <label class="form-label">Client URL</label>
+                        <input class="form-control" type="text" placeholder="Enter Client URL" [(ngModel)]="siteConfig.clientUrl" />
+                </div>
+            </div>
+            <div class="col-lg-6 col-12 mb-2">
+                <div class="form-inp-main">
+                    <label class="form-label">Site Name</label>
+                        <input class="form-control" type="text" placeholder="Enter Site Name" [(ngModel)]="siteConfig.siteName" />
+                </div>
+            </div>
+            <div class="col-lg-6 col-12 mb-2">
+                <div class="form-inp-main">
+                    <label class="form-label">Email</label>
+                        <input class="form-control" type="text" placeholder="Enter Email" [(ngModel)]="siteConfig.email" />
+                </div>
+            </div>
+            <div class="col-lg-6 col-12 mb-2">
+                <div class="form-inp-main">
+                    <label class="form-label">Mobile</label>
+                        <input class="form-control" type="text" placeholder="Enter Mobile" [(ngModel)]="siteConfig.mobile" />
+                </div>
+            </div>
+            <div class="col-lg-6 col-12 mb-2">
+                <div class="form-inp-main">
+                    <label class="form-label">Currency Symbol <sup>*</sup></label>
+                    <input class="form-control" type="text" placeholder="e.g. £, $, €, ₹"
+                        [(ngModel)]="siteConfig.currency" maxlength="5" />
+                    <small class="text-muted" style="font-size:11px;padding-left:4px">
+                        This symbol will be shown across all prices in the store
+                    </small>
+                </div>
+            </div>
+            <div class="col-lg-6 col-12 mb-2">
+                <div class="form-inp-main">
+                    <label class="form-label">Delivery Charge <sup>*</sup></label>
+                    <input class="form-control" type="number" placeholder="e.g. 20" min="0"
+                        [(ngModel)]="siteConfig.deliveryCharge" />
+                    <small class="text-muted" style="font-size:11px;padding-left:4px">
+                        Standard delivery charge applied at checkout
+                    </small>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="page-table-ttl">
+        Social Media
+    </div>
+    <div class="page-table-main">
+        <div class="row m-0 p-0">
+            <div class="col-lg-6 col-12 mb-2">
+                <div class="form-inp-main">
+                    <label class="form-label">Instagram URL</label>
+                        <input class="form-control" type="text" placeholder="Enter Instagram URL" [(ngModel)]="siteConfig.instagramURL" />
+                </div>
+            </div>
+            <div class="col-lg-6 col-12 mb-2">
+                <div class="form-inp-main">
+                    <label class="form-label">Facebook URL</label>
+                        <input class="form-control" type="text" placeholder="Enter Facebook URL" [(ngModel)]="siteConfig.facebookURL" />
+                </div>
+            </div>
+            <div class="col-lg-6 col-12 mb-2">
+                <div class="form-inp-main">
+                    <label class="form-label">Twitter URL</label>
+                        <input class="form-control" type="text" placeholder="Enter Twitter URL" [(ngModel)]="siteConfig.twitterURL" />
+                </div>
+            </div>
+            <div class="col-lg-6 col-12 mb-2">
+                <div class="form-inp-main">
+                    <label class="form-label">Linkedin URL</label>
+                        <input class="form-control" type="text" placeholder="Enter Linkedin URL" [(ngModel)]="siteConfig.linkedInURL" />
+                </div>
+            </div>
+            <div class="col-lg-6 col-12 mb-2">
+                <div class="form-inp-main">
+                    <label class="form-label">Youtube URL</label>
+                        <input class="form-control" type="text" placeholder="Enter Youtube URL" [(ngModel)]="siteConfig.youtubeURL" />
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="d-flex justify-content-end mt-2">
+        <button type="button" class="site-btn primary-color ms-1" (click)="updateSiteConfig()">Update</button>
+    </div>
+}@else {
+    <app-box-view-skeleton></app-box-view-skeleton>
+    <app-box-view-skeleton></app-box-view-skeleton>
+}

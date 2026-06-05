@@ -1,0 +1,332 @@
+<app-breadcrumb [pageName]="'Orders'" [icon]="'bag-shopping'" />
+
+<!-- Top Bar -->
+<div class="page-top-main">
+    <div class="page-top-search-main w-100 d-flex gap-2 flex-wrap">
+        <!-- Search -->
+        <input type="text" class="form-control" style="max-width:220px"
+            placeholder="Search order # or customer..."
+            [(ngModel)]="filterSearch" (keyup.enter)="filterData()" />
+
+        <!-- Status filter -->
+        <select class="form-select" style="max-width:160px" [(ngModel)]="filterStatus" (ngModelChange)="filterData()">
+            <option value="">All Statuses</option>
+            <option *ngFor="let s of statusOptions.slice(1)" [value]="s">{{s | titlecase}}</option>
+        </select>
+
+        <!-- Date from -->
+        <input type="date" class="form-control" style="max-width:160px"
+            [(ngModel)]="filterDateFrom" (change)="filterData()" />
+
+        <!-- Date to -->
+        <input type="date" class="form-control" style="max-width:160px"
+            [(ngModel)]="filterDateTo" (change)="filterData()" />
+
+        <button class="square-btn site-btn primary-color" (click)="filterData()" [ngbTooltip]="'Search'">
+            <span><i class="fa-light fa-magnifying-glass"></i></span>
+        </button>
+        <button class="site-btn grey-color w-100" *ngIf="hasActiveFilters" (click)="clearFilters()">
+            <span class="site-btn-icon"><span><i class="fa-light fa-xmark"></i></span></span>
+            Clear
+        </button>
+    </div>
+    <div class="page-top-btns-main d-flex justify-content-end gap-2">
+        <button class="site-btn grey-color w-100" (click)="exportCSV()" [ngbTooltip]="'Export CSV'">
+            <div class="site-btn-icon"><span><i class="fa-light fa-file-csv"></i></span></div>
+            Export CSV
+        </button>
+    </div>
+</div>
+
+<!-- Table -->
+@if((orders.length > 0 || !isLoading) && !isTechnicalIssue) {
+<div class="page-table-main">
+    @if(isLoading) {
+    <app-table-view-skeleton></app-table-view-skeleton>
+    } @else if(orders.length > 0) {
+    <div class="table-responsive">
+        <table class="table table-bordered text-nowrap mb-0">
+            <thead>
+                <tr>
+                    <th class="sr-th">Sr No.</th>
+                    <th>Order #</th>
+                    <th>Customer</th>
+                    <th>Date</th>
+                    <th>Items</th>
+                    <th>Total</th>
+                    <th>Payment</th>
+                    <th>Status</th>
+                    <th>Action</th>
+                </tr>
+            </thead>
+            <tbody>
+                @for(order of orders | paginate: { itemsPerPage: pageSize, currentPage: currentPage, totalItems: totalOrders };
+                track order; let i = $index) {
+                <tr>
+                    <td class="sr-no-td">{{ (currentPage - 1) * pageSize + (i + 1) }}</td>
+
+                    <!-- Order # -->
+                    <td>
+                        <span class="order-num">{{order.orderNumber}}</span>
+                    </td>
+
+                    <!-- Customer -->
+                    <td>
+                        <div class="order-customer">
+                            <div class="order-customer-name">{{order.firstName}} {{order.lastName}}</div>
+                            <div class="order-customer-email">{{order.email}}</div>
+                        </div>
+                    </td>
+
+                    <!-- Date -->
+                    <td>{{order.created_at | date:'dd MMM yyyy'}}</td>
+
+                    <!-- Items -->
+                    <td>
+                        <span class="sort-badge">{{parseJSON(order.items, []).length}}</span>
+                    </td>
+
+                    <!-- Total -->
+                    <td>
+                        <div class="order-total">
+                            <span class="order-total-val">{{currency}}{{order.total}}</span>
+                            <span class="order-delivery-note" *ngIf="order.deliveryCharge">
+                                incl. {{currency}}{{order.deliveryCharge}} delivery
+                            </span>
+                        </div>
+                    </td>
+
+                    <!-- Payment -->
+                    <td>
+                        <span class="status-table blue">
+                            <span class="status-icon"><i class="fa-light fa-credit-card"></i></span>
+                            {{order.paymentMethod | titlecase}}
+                        </span>
+                    </td>
+
+                    <!-- Status -->
+                    <td>
+                        <div class="status-td">
+                            <select class="order-status-select"
+                                [ngClass]="'status-' + order.status"
+                                [(ngModel)]="order.status"
+                                (change)="updateStatus(order, order.status)">
+                                <option *ngFor="let s of statusOptions.slice(1)" [value]="s">{{s | titlecase}}</option>
+                            </select>
+                        </div>
+                    </td>
+
+                    <!-- Actions -->
+                    <td>
+                        <div class="table-btns-main">
+                            <button [ngbTooltip]="'View Order'" class="table-single-btn primary"
+                                (click)="viewOrder(order, orderModal)">
+                                <span class="icon"><i class="fa-light fa-eye"></i></span>
+                                <span class="label">View</span>
+                            </button>
+                        </div>
+                    </td>
+                </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+
+    <!-- Pagination -->
+    <div class="main-pagination">
+        <div class="data-limit-main">
+            <select class="form-select" [(ngModel)]="pageSize" (ngModelChange)="currentPage = 1; loadOrders()">
+                <option [value]="10">10 / page</option>
+                <option [value]="20">20 / page</option>
+                <option [value]="50">50 / page</option>
+                <option [value]="100">100 / page</option>
+            </select>
+        </div>
+        <div class="pagination-inner">
+            <pagination-controls (pageChange)="onPageChange($event)" />
+        </div>
+    </div>
+    }
+</div>
+}
+
+<!-- No Data / Error -->
+@if((orders.length === 0 && !isLoading) || isTechnicalIssue) {
+<div class="no-data-found-main">
+    <div class="no-data-found-img">
+        @if(isTechnicalIssue) {
+        <img src="../../../assets/img/technical-issue.png" alt="Technical Issue">
+        } @else {
+        <img src="../../../assets/img/no-data.png" alt="No Orders">
+        }
+    </div>
+    @if(isTechnicalIssue) {
+    <div class="no-data-found-ttl">Technical Issue Found</div>
+    <div class="no-data-found-ctx">Please try again later.</div>
+    <button class="site-btn primary-color" routerLink="/dashboard">
+        <div class="site-btn-icon"><span><i class="fa-light fa-house"></i></span></div>
+        Go to Dashboard
+    </button>
+    } @else {
+    <div class="no-data-found-ttl">No Orders Found!</div>
+    <div class="no-data-found-ctx">Orders will appear here once customers start placing them.</div>
+    }
+</div>
+}
+
+<!-- ── Order Detail Modal ── -->
+<ng-template #orderModal let-modal>
+    <div class="popup-head">
+        <div class="popup-head-ttl">
+            <span class="popup-head-icon"><span><i class="fa-light fa-bag-shopping"></i></span></span>
+            Order — {{selectedOrder?.orderNumber}}
+        </div>
+        <div class="popup-head-btn">
+            <button (click)="modal.dismiss()" [ngbTooltip]="'Close'">
+                <span><i class="fa-light fa-xmark"></i></span>
+            </button>
+        </div>
+    </div>
+
+    <div class="popup-body" *ngIf="selectedOrder">
+
+        <!-- Status + Meta -->
+        <div class="order-meta-grid">
+            <div class="order-meta-item">
+                <span class="order-meta-label">Status</span>
+                <span class="status-table" [ngClass]="getStatusClass(selectedOrder.status)">
+                    <span class="status-icon">
+                        <i [class]="selectedOrder.status === 'delivered' ? 'fa-light fa-circle-check' : 'fa-light fa-circle-dot'"></i>
+                    </span>
+                    {{selectedOrder.status | titlecase}}
+                </span>
+            </div>
+            <div class="order-meta-item">
+                <span class="order-meta-label">Date</span>
+                <span>{{selectedOrder.created_at | date:'dd MMM yyyy, HH:mm'}}</span>
+            </div>
+            <div class="order-meta-item">
+                <span class="order-meta-label">Customer</span>
+                <span>{{selectedOrder.firstName}} {{selectedOrder.lastName}}</span>
+            </div>
+            <div class="order-meta-item">
+                <span class="order-meta-label">Email</span>
+                <span>{{selectedOrder.email}}</span>
+            </div>
+            <div class="order-meta-item">
+                <span class="order-meta-label">Phone</span>
+                <span>{{selectedOrder.contactPhone || '—'}}</span>
+            </div>
+            <div class="order-meta-item">
+                <span class="order-meta-label">Payment</span>
+                <span>{{selectedOrder.paymentMethod | titlecase}}</span>
+            </div>
+            <div class="order-meta-item" *ngIf="selectedOrder.razorpayPaymentId">
+                <span class="order-meta-label">Payment ID</span>
+                <span class="order-mono">{{selectedOrder.razorpayPaymentId}}</span>
+            </div>
+        </div>
+
+        <!-- Delivery Address -->
+        <div class="order-section" *ngIf="selectedOrder._address?.line1">
+            <div class="order-section-title">
+                <span><i class="fa-light fa-location-dot"></i></span>
+                Delivery Address
+            </div>
+            <div class="order-address-box">
+                <strong>{{selectedOrder._address.firstName}} {{selectedOrder._address.lastName}}</strong><br/>
+                {{selectedOrder._address.line1}}
+                <span *ngIf="selectedOrder._address.line2">, {{selectedOrder._address.line2}}</span><br/>
+                <span *ngIf="selectedOrder._address.city">{{selectedOrder._address.city}}, </span>
+                <span *ngIf="selectedOrder._address.county">{{selectedOrder._address.county}}, </span>
+                {{selectedOrder._address.postcode | uppercase}}<br/>
+                {{selectedOrder._address.country}}
+            </div>
+        </div>
+
+        <!-- Items -->
+        <div class="order-section">
+            <div class="order-section-title">
+                <span><i class="fa-light fa-box"></i></span>
+                Items ({{selectedOrder._items.length}})
+            </div>
+            <div class="table-responsive">
+                <table class="table table-bordered mb-0" style="font-size:12px">
+                    <thead>
+                        <tr>
+                            <th>Image</th>
+                            <th>Product</th>
+                            <th>Options</th>
+                            <th>Qty</th>
+                            <th>Unit Price</th>
+                            <th>Subtotal</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr *ngFor="let item of selectedOrder._items">
+                            <td>
+                                <div class="order-item-img-wrap">
+                                    <img *ngIf="item.image" [src]="item.image" [alt]="item.name" />
+                                    <div *ngIf="!item.image" class="order-item-img-placeholder">
+                                        <span><i class="fa-light fa-image"></i></span>
+                                    </div>
+                                </div>
+                            </td>
+                            <td style="text-align:left;white-space:normal;max-width:200px">{{item.name}}</td>
+                            <td>
+                                <span *ngFor="let opt of getOptionEntries(item.selectedOptions)" class="cat-tag">
+                                    {{opt.key}}: {{opt.value}}
+                                </span>
+                                <span *ngIf="!getOptionEntries(item.selectedOptions).length">—</span>
+                            </td>
+                            <td>{{item.quantity}}</td>
+                            <td>{{currency}}{{(item.salePrice ?? item.price) | number:'1.2-2'}}</td>
+                            <td class="fw-bold">{{currency}}{{((item.salePrice ?? item.price) * item.quantity) | number:'1.2-2'}}</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Totals -->
+        <div class="order-totals">
+            <div class="order-total-row">
+                <span>Subtotal</span>
+                <span>{{currency}}{{selectedOrder.subtotal}}</span>
+            </div>
+            <div class="order-total-row">
+                <span>Delivery</span>
+                <span>{{currency}}{{selectedOrder.deliveryCharge}}</span>
+            </div>
+            <div class="order-total-row order-grand-total">
+                <span>Total</span>
+                <span>{{currency}}{{selectedOrder.total}}</span>
+            </div>
+        </div>
+
+        <!-- Update Status -->
+        <div class="order-section mt-3">
+            <div class="order-section-title">
+                <span><i class="fa-light fa-pen-to-square"></i></span>
+                Update Status
+            </div>
+            <div class="d-flex gap-2 flex-wrap">
+                <button *ngFor="let s of statusOptions.slice(1)"
+                    class="site-btn"
+                    [class.primary-color]="selectedOrder.status === s"
+                    [class.grey-color]="selectedOrder.status !== s"
+                    (click)="updateStatus(selectedOrder, s); selectedOrder.status = s">
+                    {{s | titlecase}}
+                </button>
+            </div>
+        </div>
+
+    </div>
+
+    <div class="popup-footer">
+        <button type="button" class="site-btn grey-color" (click)="modal.dismiss()">
+            <span class="site-btn-icon"><span><i class="fa-light fa-xmark"></i></span></span>
+            Close
+        </button>
+    </div>
+</ng-template>

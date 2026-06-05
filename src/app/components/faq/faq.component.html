@@ -1,0 +1,183 @@
+<app-breadcrumb [pageName]="'FAQ Manager'" [icon]="'circle-question'" />
+
+<div class="faq-layout">
+
+    <!-- ── Left: Category list ── -->
+    <aside class="faq-sidebar">
+        <div class="faq-sidebar-head">
+            <span class="faq-sidebar-title">Categories</span>
+            <button class="site-btn primary-color faq-add-cat-btn" (click)="openAddCat()">
+                <span class="site-btn-icon"><span><i class="fa-light fa-plus"></i></span></span>
+                Add
+            </button>
+        </div>
+
+        <app-box-view-skeleton *ngIf="isLoading"></app-box-view-skeleton>
+
+        <div class="faq-cat-list" *ngIf="!isLoading">
+            <div class="faq-cat-item"
+                *ngFor="let cat of categories"
+                [class.active]="selectedCat?.id === cat.id"
+                (click)="selectCat(cat)">
+                <span class="faq-cat-icon" *ngIf="cat.icon">
+                    <i [class]="cat.icon"></i>
+                </span>
+                <div class="faq-cat-info">
+                    <span class="faq-cat-name">{{ cat.name }}</span>
+                    <span class="faq-cat-count">{{ cat.articles?.length || 0 }} articles</span>
+                </div>
+                <div class="faq-cat-actions">
+                    <button class="cpb-icon-btn" (click)="openEditCat(cat, $event)" title="Edit">
+                        <span><i class="fa-light fa-pen"></i></span>
+                    </button>
+                    <button class="cpb-icon-btn danger" (click)="deleteCat(cat, $event)" title="Delete">
+                        <span><i class="fa-light fa-trash-can"></i></span>
+                    </button>
+                </div>
+            </div>
+            <div class="faq-cat-empty" *ngIf="categories.length === 0">
+                No categories yet.
+            </div>
+        </div>
+    </aside>
+
+    <!-- ── Right: Articles / Forms ── -->
+    <main class="faq-main">
+
+        <!-- Category form -->
+        <div class="faq-card" *ngIf="showCatForm">
+            <div class="faq-card-head">
+                <span class="faq-card-title">
+                    <span><i class="fa-light fa-folder"></i></span>
+                    {{ editingCatId ? 'Edit Category' : 'Add Category' }}
+                </span>
+            </div>
+            <div class="faq-card-body">
+                <div class="faq-fields-row">
+                    <div class="form-inp-main">
+                        <label class="form-label">Category Name *</label>
+                        <input class="form-control" type="text" [(ngModel)]="catForm.name" placeholder="e.g. Returns & Refunds" />
+                    </div>
+                    <div class="form-inp-main">
+                        <label class="form-label">Icon Class</label>
+                        <input class="form-control" type="text" [(ngModel)]="catForm.icon" placeholder="e.g. fa-light fa-arrow-rotate-left" />
+                        <small class="text-muted" style="font-size:11px;padding-left:4px">Font Awesome class</small>
+                    </div>
+                    <div class="form-inp-main">
+                        <label class="form-label">Sort Order</label>
+                        <input class="form-control" type="number" [(ngModel)]="catForm.sortOrder" />
+                    </div>
+                    <div class="form-inp-main" style="display:flex;align-items:center;gap:10px;padding-top:24px">
+                        <label class="toggle-switch">
+                            <input type="checkbox" class="toggle-input" [(ngModel)]="catForm.isActive" />
+                            <span class="toggle-label"></span>
+                        </label>
+                        <span style="font-size:13px">Active</span>
+                    </div>
+                </div>
+                <div class="faq-form-footer">
+                    <button class="site-btn outline-btn" (click)="cancelCatForm()">Cancel</button>
+                    <button class="site-btn primary-color" (click)="saveCat()" [disabled]="catSaving">
+                        <span class="site-btn-icon">
+                            <span><i *ngIf="!catSaving" class="fa-light fa-floppy-disk"></i></span>
+                            <span><i *ngIf="catSaving" class="fa-light fa-spinner-third fa-spin"></i></span>
+                        </span>
+                        {{ catSaving ? 'Saving...' : 'Save Category' }}
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- No category selected -->
+        <div class="faq-empty-state" *ngIf="!selectedCat && !showCatForm">
+            <span><i class="fa-light fa-circle-question"></i></span>
+            <p>Select a category from the left to manage its articles.</p>
+        </div>
+
+        <!-- Articles panel -->
+        <ng-container *ngIf="selectedCat && !showCatForm">
+
+            <div class="faq-articles-header">
+                <div>
+                    <h2 class="faq-articles-title">{{ selectedCat.name }}</h2>
+                    <span class="faq-articles-count">{{ selectedCat.articles?.length || 0 }} articles</span>
+                </div>
+                <button class="site-btn primary-color" (click)="openAddArt()">
+                    <span class="site-btn-icon"><span><i class="fa-light fa-plus"></i></span></span>
+                    Add Article
+                </button>
+            </div>
+
+            <!-- Article form -->
+            <div class="faq-card" *ngIf="showArtForm">
+                <div class="faq-card-head">
+                    <span class="faq-card-title">
+                        <span><i class="fa-light fa-file-lines"></i></span>
+                        {{ editingArtId ? 'Edit Article' : 'Add Article' }}
+                    </span>
+                </div>
+                <div class="faq-card-body">
+                    <div class="form-inp-main mb-3">
+                        <label class="form-label">Article Title *</label>
+                        <input class="form-control" type="text" [(ngModel)]="artForm.title" placeholder="e.g. How can I return my items?" />
+                    </div>
+                    <div class="form-inp-main mb-3">
+                        <label class="form-label">Content</label>
+                        <st-editor [(ngModel)]="artForm.content"
+                            [config]="{ placeholder: 'Enter article content...' }">
+                        </st-editor>
+                    </div>
+                    <div class="faq-fields-row">
+                        <div class="form-inp-main">
+                            <label class="form-label">Sort Order</label>
+                            <input class="form-control" type="number" [(ngModel)]="artForm.sortOrder" />
+                        </div>
+                        <div class="form-inp-main" style="display:flex;align-items:center;gap:10px;padding-top:24px">
+                            <label class="toggle-switch">
+                                <input type="checkbox" class="toggle-input" [(ngModel)]="artForm.isActive" />
+                                <span class="toggle-label"></span>
+                            </label>
+                            <span style="font-size:13px">Active</span>
+                        </div>
+                    </div>
+                    <div class="faq-form-footer">
+                        <button class="site-btn outline-btn" (click)="cancelArtForm()">Cancel</button>
+                        <button class="site-btn primary-color" (click)="saveArt()" [disabled]="artSaving">
+                            <span class="site-btn-icon">
+                                <span><i *ngIf="!artSaving" class="fa-light fa-floppy-disk"></i></span>
+                                <span><i *ngIf="artSaving" class="fa-light fa-spinner-third fa-spin"></i></span>
+                            </span>
+                            {{ artSaving ? 'Saving...' : 'Save Article' }}
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Articles list -->
+            <div class="faq-art-list" *ngIf="!showArtForm">
+                <div class="faq-art-item" *ngFor="let art of selectedCat.articles">
+                    <div class="faq-art-info">
+                        <span class="faq-art-title">{{ art.title }}</span>
+                        <span class="faq-art-status" [class.active]="art.isActive">
+                            {{ art.isActive ? 'Active' : 'Inactive' }}
+                        </span>
+                    </div>
+                    <div class="faq-art-actions">
+                        <button class="cpb-icon-btn" (click)="openEditArt(art)" title="Edit">
+                            <span><i class="fa-light fa-pen"></i></span>
+                        </button>
+                        <button class="cpb-icon-btn danger" (click)="deleteArt(art)" title="Delete">
+                            <span><i class="fa-light fa-trash-can"></i></span>
+                        </button>
+                    </div>
+                </div>
+                <div class="faq-art-empty" *ngIf="!selectedCat.articles?.length">
+                    No articles yet. Click "Add Article" to create one.
+                </div>
+            </div>
+
+        </ng-container>
+
+    </main>
+
+</div>

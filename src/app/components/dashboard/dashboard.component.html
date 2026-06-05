@@ -1,0 +1,26 @@
+<app-breadcrumb [pageName]="'Dashboard'" [icon]="'grid-2'" />
+@if(dashboardData){
+    <div class="d-grid p-0 m-0 two-box">
+        <div class="dash-box-main">
+            <div class="dash-box-icon">
+                <i class="fa-regular fa-users"></i>
+            </div>
+            <div class="dash-box-ctx">
+                <div class="dash-box-count">{{dashboardData?.users || 0 | number}}</div>
+                <div class="dash-box-name">Users</div>
+            </div>
+        </div>
+        <div class="dash-box-main">
+            <div class="dash-box-icon">
+                <i class="fa-regular fa-list"></i>
+            </div>
+            <div class="dash-box-ctx">
+                <div class="dash-box-count">{{dashboardData?.submissions || 0 | number}}</div>
+                <div class="dash-box-name">Submissions</div>
+            </div>
+        </div>
+    </div>
+}@else {
+    <app-box-view-skeleton></app-box-view-skeleton>
+    <app-table-view-skeleton></app-table-view-skeleton>
+}

@@ -1,0 +1,262 @@
+.policies-layout {
+    display: grid;
+    grid-template-columns: 240px 1fr;
+    gap: 20px;
+    align-items: start;
+    min-height: calc(100vh - 120px);
+}
+
+/* ── Sidebar ── */
+.policies-sidebar {
+    background: var(--white);
+    border: 1px solid var(--light-border);
+    border-radius: 14px;
+    overflow: hidden;
+    position: sticky;
+    top: 20px;
+}
+
+.policies-sidebar-title {
+    font-size: 12px;
+    font-weight: 700;
+    color: var(--heading-font);
+    padding: 14px 16px 10px;
+    border-bottom: 1px solid var(--light-border);
+    letter-spacing: 0.3px;
+}
+
+.policies-sidebar-list {
+    display: flex;
+    flex-direction: column;
+}
+
+.policies-sidebar-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 13px 14px;
+    cursor: pointer;
+    border: none;
+    background: none;
+    border-bottom: 1px solid var(--light-border);
+    text-align: left;
+    transition: background 0.12s;
+    font-family: 'Poppins', sans-serif;
+
+    &:last-child { border-bottom: none; }
+    &:hover { background: var(--sidebar-bg); }
+    &.active { background: var(--primary-extra-light); }
+}
+
+.policies-sidebar-icon {
+    width: 28px;
+    height: 28px;
+    border-radius: 6px;
+    background: var(--sidebar-bg);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+
+    span { display: inline-flex; align-items: center; justify-content: center; }
+    i { font-size: 13px; color: var(--primary); }
+}
+
+.policies-sidebar-name {
+    flex: 1;
+    font-size: 12px;
+    font-weight: 500;
+    color: var(--heading-font);
+    line-height: 1.3;
+}
+
+.policies-sidebar-arrow {
+    flex-shrink: 0;
+    span { display: inline-flex; align-items: center; justify-content: center; }
+    i { font-size: 10px; color: var(--normal-font); }
+}
+
+/* ── Main ── */
+.policies-main {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.policies-editor {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+/* Editor header */
+.policies-editor-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background: var(--white);
+    border: 1px solid var(--light-border);
+    border-radius: 14px;
+    padding: 16px 20px;
+    flex-wrap: wrap;
+    gap: 12px;
+}
+
+.policies-editor-title {
+    font-size: 16px;
+    font-weight: 700;
+    color: var(--heading-font);
+    margin: 0 0 4px;
+}
+
+.policies-editor-url {
+    font-size: 11px;
+    color: var(--normal-font);
+    font-family: monospace;
+}
+
+.policies-save-btn { min-width: 140px; height: 40px; }
+
+/* Card */
+.policies-card {
+    background: var(--white);
+    border: 1px solid var(--light-border);
+    border-radius: 14px;
+    overflow: hidden;
+}
+
+.policies-card-head {
+    display: flex;
+    align-items: center;
+    padding: 12px 16px;
+    background: color-mix(in srgb, var(--sidebar-bg) 60%, transparent);
+    border-bottom: 1px solid var(--light-border);
+}
+
+.policies-card-title {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--heading-font);
+
+    span { display: inline-flex; align-items: center; justify-content: center; }
+    i { color: var(--primary); font-size: 14px; }
+}
+
+.policies-card-body { padding: 16px; }
+
+.policies-fields-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 14px;
+}
+
+/* Sections header */
+.policies-sections-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background: var(--white);
+    border: 1px solid var(--light-border);
+    border-radius: 14px;
+    padding: 14px 16px;
+}
+
+.policies-sections-label {
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--heading-font);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.policies-sections-count {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 22px;
+    height: 22px;
+    padding: 0 6px;
+    background: var(--primary);
+    color: #fff;
+    border-radius: 20px;
+    font-size: 11px;
+    font-weight: 700;
+}
+
+/* Section card */
+.policies-section-card {
+    background: var(--white);
+    border: 1px solid var(--light-border);
+    border-radius: 14px;
+    overflow: hidden;
+}
+
+.policies-section-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 10px 14px;
+    background: color-mix(in srgb, var(--sidebar-bg) 60%, transparent);
+    border-bottom: 1px solid var(--light-border);
+}
+
+.policies-section-num {
+    font-size: 12px;
+    font-weight: 700;
+    color: var(--heading-font);
+}
+
+.policies-section-actions {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.policies-section-body { padding: 16px; }
+
+/* Icon buttons (reuse from category-page-builder) */
+.cpb-icon-btn {
+    width: 30px;
+    height: 30px;
+    border-radius: 6px;
+    border: 1px solid var(--light-border);
+    background: var(--white);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background 0.12s;
+    color: var(--heading-font);
+
+    span { display: inline-flex; align-items: center; justify-content: center; }
+    i { font-size: 12px; }
+    &:hover { background: var(--sidebar-bg); }
+    &:disabled { opacity: 0.35; cursor: not-allowed; }
+    &.danger { color: var(--red-color); border-color: var(--red-color); }
+    &.danger:hover { background: var(--red-bg); }
+}
+
+/* Empty state */
+.policies-sections-empty {
+    background: var(--white);
+    border: 1px dashed var(--light-border);
+    border-radius: 14px;
+    padding: 48px 24px;
+    text-align: center;
+    color: var(--normal-font);
+
+    span { display: inline-flex; align-items: center; justify-content: center; margin-bottom: 10px; }
+    i { font-size: 32px; color: var(--light-border); }
+    p { font-size: 12px; margin: 0; }
+}
+
+/* Save bottom */
+.policies-save-bottom {
+    display: flex;
+    justify-content: flex-end;
+    padding: 8px 0 16px;
+}

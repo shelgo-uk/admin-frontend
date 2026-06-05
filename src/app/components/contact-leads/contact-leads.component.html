@@ -1,0 +1,137 @@
+<app-breadcrumb [pageName]="'Contact Leads'" [icon]="'envelope'" />
+
+<div class="leads-layout">
+
+    <!-- ── Left: Leads list ── -->
+    <aside class="leads-sidebar">
+
+        <!-- Filter tabs -->
+        <div class="leads-filter-tabs">
+            <button class="leads-filter-tab"
+                *ngFor="let s of statusOptions"
+                [class.active]="filterStatus === s.value"
+                (click)="applyFilter(s.value)">
+                {{ s.label }}
+            </button>
+        </div>
+
+        <!-- Loading -->
+        <app-table-view-skeleton *ngIf="isLoading"></app-table-view-skeleton>
+
+        <!-- List -->
+        <div class="leads-list" *ngIf="!isLoading">
+            <div class="leads-item"
+                *ngFor="let lead of leads"
+                [class.active]="selectedLead?.id === lead.id"
+                [class.unread]="lead.status === 'new'"
+                (click)="viewLead(lead)">
+                <div class="leads-item-top">
+                    <span class="leads-item-name">{{ lead.name }}</span>
+                    <span class="leads-item-badge" [class]="getStatusClass(lead.status)">{{ lead.status }}</span>
+                </div>
+                <div class="leads-item-subject" *ngIf="lead.subject">{{ lead.subject }}</div>
+                <div class="leads-item-preview">{{ lead.message | slice:0:60 }}{{ lead.message?.length > 60 ? '...' : '' }}</div>
+                <div class="leads-item-date">{{ lead.created_at | date:'dd MMM yyyy, HH:mm' }}</div>
+            </div>
+
+            <div class="leads-empty" *ngIf="leads.length === 0">
+                <span><i class="fa-light fa-inbox"></i></span>
+                <p>No leads found.</p>
+            </div>
+        </div>
+
+        <!-- Pagination -->
+        <div class="leads-pagination" *ngIf="totalPages > 1">
+            <button class="leads-page-btn" (click)="prevPage()" [disabled]="page === 1">
+                <span><i class="fa-light fa-chevron-left"></i></span>
+            </button>
+            <span class="leads-page-info">{{ page }} / {{ totalPages }}</span>
+            <button class="leads-page-btn" (click)="nextPage()" [disabled]="page === totalPages">
+                <span><i class="fa-light fa-chevron-right"></i></span>
+            </button>
+        </div>
+
+        <div class="leads-total-info" *ngIf="!isLoading">
+            {{ total }} total lead{{ total !== 1 ? 's' : '' }}
+        </div>
+
+    </aside>
+
+    <!-- ── Right: Lead detail ── -->
+    <main class="leads-detail">
+
+        <!-- Empty state -->
+        <div class="leads-detail-empty" *ngIf="!selectedLead">
+            <span><i class="fa-light fa-envelope-open"></i></span>
+            <p>Select a message to view details.</p>
+        </div>
+
+        <!-- Detail view -->
+        <div class="leads-detail-card" *ngIf="selectedLead">
+
+            <div class="leads-detail-head">
+                <div class="leads-detail-meta">
+                    <h2 class="leads-detail-name">{{ selectedLead.name }}</h2>
+                    <span class="leads-detail-date">{{ selectedLead.created_at | date:'dd MMM yyyy, HH:mm' }}</span>
+                </div>
+                <div class="leads-detail-actions">
+                    <!-- Status dropdown -->
+                    <select class="leads-status-select" [value]="selectedLead.status"
+                        (change)="updateStatus(selectedLead, $any($event.target).value)">
+                        <option value="new">New</option>
+                        <option value="read">Read</option>
+                        <option value="replied">Replied</option>
+                        <option value="closed">Closed</option>
+                    </select>
+                    <button class="leads-delete-btn" (click)="deleteLead(selectedLead)" title="Delete">
+                        <span><i class="fa-light fa-trash-can"></i></span>
+                        Delete
+                    </button>
+                </div>
+            </div>
+
+            <div class="leads-detail-body">
+
+                <div class="leads-detail-row">
+                    <span class="leads-detail-label">Email</span>
+                    <a [href]="'mailto:' + selectedLead.email" class="leads-detail-val leads-email-link">
+                        {{ selectedLead.email }}
+                    </a>
+                </div>
+
+                <div class="leads-detail-row" *ngIf="selectedLead.phone">
+                    <span class="leads-detail-label">Phone</span>
+                    <span class="leads-detail-val">{{ selectedLead.phone }}</span>
+                </div>
+
+                <div class="leads-detail-row" *ngIf="selectedLead.subject">
+                    <span class="leads-detail-label">Subject</span>
+                    <span class="leads-detail-val">{{ selectedLead.subject }}</span>
+                </div>
+
+                <div class="leads-detail-row">
+                    <span class="leads-detail-label">Status</span>
+                    <span class="leads-item-badge" [class]="getStatusClass(selectedLead.status)">
+                        {{ selectedLead.status }}
+                    </span>
+                </div>
+
+                <div class="leads-message-box">
+                    <div class="leads-message-label">Message</div>
+                    <div class="leads-message-text">{{ selectedLead.message }}</div>
+                </div>
+
+                <!-- Quick reply link -->
+                <a [href]="'mailto:' + selectedLead.email + '?subject=Re: ' + (selectedLead.subject || 'Your enquiry')"
+                   class="leads-reply-btn">
+                    <span><i class="fa-light fa-reply"></i></span>
+                    Reply via Email
+                </a>
+
+            </div>
+
+        </div>
+
+    </main>
+
+</div>
