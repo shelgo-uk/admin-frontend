@@ -44,6 +44,7 @@ import { BrandsComponent } from './components/brands/brands.component';
 import { AddUpdateBrandsComponent } from './components/brands/add-update-brands/add-update-brands.component';
 import { ProductsComponent } from './components/products/products.component';
 import { AddUpdateProductsComponent } from './components/products/add-update-products/add-update-products.component';
+import { ProductsBulkImportComponent } from './components/products/products-bulk-import/products-bulk-import.component';
 import { PromoBannersComponent } from './components/promo-banners/promo-banners.component';
 import { CustomersComponent } from './components/customers/customers.component';
 import { AddUpdateCustomersComponent } from './components/customers/add-update-customers/add-update-customers.component';
@@ -91,6 +92,7 @@ export function initAppConfig(cfg: ConfigService) {
     AddUpdateBrandsComponent,
     ProductsComponent,
     AddUpdateProductsComponent,
+    ProductsBulkImportComponent,
     PromoBannersComponent,
     CustomersComponent,
     AddUpdateCustomersComponent,

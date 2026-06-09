@@ -62,6 +62,8 @@ export function rebuildUrlConstant() {
       getAllReviews: environment.APIUrl + 'product/getAllReviews',
       updateReviewStatus: environment.APIUrl + 'product/updateReviewStatus/',
       deleteReview: environment.APIUrl + 'product/deleteReview/',
+      exportProducts: environment.APIUrl + 'product/exportProducts',
+      bulkImport: environment.APIUrl + 'product/bulkImportProducts',
     },
     CustomerAPI: {
       getAllByPage: environment.APIUrl + 'customer/getAllByPage',

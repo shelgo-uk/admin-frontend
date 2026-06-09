@@ -99,11 +99,21 @@ export class AddUpdateCategoriesComponent implements OnInit {
         this.showParentPicker = !this.showParentPicker;
     }
 
+    imageUrlInput = '';
+
     async uploadImage() {
         const result = await this.sharedservice.UploadFile('categories', null, 'image');
         if (result?.url) {
             this.dataReqModel.image = result.url;
         }
+    }
+
+    applyImageUrl() {
+        const url = (this.imageUrlInput || '').trim();
+        if (!url) return this.sharedservice.showAlert(2, 'Enter image URL');
+        if (!/^https?:\/\//i.test(url)) return this.sharedservice.showAlert(2, 'URL must start with http:// or https://');
+        this.dataReqModel.image = url;
+        this.imageUrlInput = '';
     }
 
     removeImage() {

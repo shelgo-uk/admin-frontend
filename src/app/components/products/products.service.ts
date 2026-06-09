@@ -38,4 +38,15 @@ export class ProductsService {
     deleteReview(id: number) {
         return this.http.delete<any>(urlConstant.ProductAPI.deleteReview + id);
     }
+    exportAll(filters: any = {}) {
+        let url = urlConstant.ProductAPI.exportProducts;
+        const params: string[] = [];
+        if (filters.categoryId) params.push(`categoryId=${filters.categoryId}`);
+        if (filters.brandId) params.push(`brandId=${filters.brandId}`);
+        if (params.length) url += '?' + params.join('&');
+        return this.http.get<any>(url);
+    }
+    bulkImport(products: any[]) {
+        return this.http.post<any>(urlConstant.ProductAPI.bulkImport, { products });
+    }
 }

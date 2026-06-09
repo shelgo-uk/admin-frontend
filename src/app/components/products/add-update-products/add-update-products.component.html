@@ -178,6 +178,15 @@
                         </div>
                     </div>
 
+                    <div class="pf-image-url-row">
+                        <input type="url" class="form-control" placeholder="Or paste image URL (https://...)"
+                            [(ngModel)]="newImageUrl" (keyup.enter)="addImageUrl()" />
+                        <button type="button" class="site-btn primary-color" (click)="addImageUrl()">
+                            <span class="site-btn-icon"><i class="fa-light fa-link"></i></span>
+                            Add URL
+                        </button>
+                    </div>
+
                     <div class="pf-media-tip" *ngIf="model.images.length === 0">
                         <i class="fa-light fa-circle-info"></i>
                         Upload at least one image. The first image will be used as the main product thumbnail.

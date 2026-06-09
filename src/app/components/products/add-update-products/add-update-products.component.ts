@@ -31,6 +31,7 @@ export class AddUpdateProductsComponent implements OnInit {
 
     // Tag input
     newTag = '';
+    newImageUrl = '';
 
     // Active section for sticky nav
     activeSection = 'basic';
@@ -98,6 +99,24 @@ export class AddUpdateProductsComponent implements OnInit {
     async addImage() {
         const result = await this.sharedservice.UploadFile('products', null, 'image');
         if (result?.url) this.model.images.push(result.url);
+    }
+
+    addImageUrl() {
+        const url = (this.newImageUrl || '').trim();
+        if (!url) {
+            this.sharedservice.showAlert(2, 'Enter a valid image URL');
+            return;
+        }
+        if (!/^https?:\/\//i.test(url)) {
+            this.sharedservice.showAlert(2, 'URL must start with http:// or https://');
+            return;
+        }
+        if (this.model.images.includes(url)) {
+            this.sharedservice.showAlert(2, 'This image URL is already added');
+            return;
+        }
+        this.model.images.push(url);
+        this.newImageUrl = '';
     }
 
     removeImage(i: number) { this.model.images.splice(i, 1); }

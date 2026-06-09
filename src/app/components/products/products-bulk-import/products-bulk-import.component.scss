@@ -1,0 +1,13 @@
+.bulk-import-body {
+  .bulk-import-desc { font-size: 14px; color: #555; margin-bottom: 16px; }
+  .bulk-demo-btns { margin-bottom: 16px; }
+  .bulk-columns-info {
+    background: #f8f9fa;
+    border: 1px solid #e9ecef;
+    border-radius: 8px;
+    padding: 12px;
+    font-size: 13px;
+    margin-bottom: 16px;
+  }
+  .bulk-fail-list { max-height: 160px; overflow: auto; }
+}

@@ -113,6 +113,12 @@
                                 </button>
                             </div>
                         </div>
+
+                        <div class="d-flex gap-2 mt-2 flex-wrap">
+                            <input type="url" class="form-control" placeholder="Or paste image URL"
+                                [(ngModel)]="imageUrlInput" (keyup.enter)="applyImageUrl()" />
+                            <button type="button" class="site-btn primary-color" (click)="applyImageUrl()">Add URL</button>
+                        </div>
                     </div>
 
                 </div>

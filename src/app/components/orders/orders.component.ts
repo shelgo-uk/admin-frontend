@@ -3,6 +3,7 @@ import { HttpClient } from '@angular/common/http';
 import { SharedService } from '../../shared/services/shared.service';
 import { urlConstant } from '../../shared/constant/urlConst';
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
+import { downloadExcel } from '../../shared/utils/excel.util';
 
 @Component({
     selector: 'app-orders',
@@ -90,7 +91,7 @@ export class OrdersComponent implements OnInit {
         );
     }
 
-    exportCSV(): void {
+    exportExcel(): void {
         const headers = ['Order #', 'Customer', 'Email', 'Date', 'Items', 'Subtotal', 'Delivery', 'Total', 'Status', 'Payment'];
         const rows = this.orders.map(o => [
             o.orderNumber,
@@ -104,14 +105,7 @@ export class OrdersComponent implements OnInit {
             o.status,
             o.paymentMethod || ''
         ]);
-        const csv = [headers, ...rows].map(r => r.map(v => `"${v}"`).join(',')).join('\n');
-        const blob = new Blob([csv], { type: 'text/csv' });
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = `orders_${new Date().toISOString().split('T')[0]}.csv`;
-        a.click();
-        URL.revokeObjectURL(url);
+        downloadExcel(`orders_${new Date().toISOString().split('T')[0]}.xlsx`, headers, rows);
     }
 
     parseJSON(val: any, fallback: any): any {

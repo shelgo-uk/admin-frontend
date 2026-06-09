@@ -6,6 +6,8 @@ import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
 import { DeleteConfirmationComponent } from '../../shared/components/delete-confirmation/delete-confirmation.component';
 import { CategoriesService } from '../categories/categories.service';
 import { BrandsService } from '../brands/brands.service';
+import { ProductsBulkImportComponent } from './products-bulk-import/products-bulk-import.component';
+import { downloadExcel } from '../../shared/utils/excel.util';
 
 @Component({
     selector: 'app-products',
@@ -25,6 +27,7 @@ export class ProductsComponent implements OnInit {
     allBrands: any[] = [];
     filterCategoryId: number | null = null;
     filterBrandId: number | null = null;
+    isExporting = false;
 
     constructor(
         public sharedservice: SharedService,
@@ -98,4 +101,47 @@ export class ProductsComponent implements OnInit {
     }
 
     getFirstImage(images: string[]): string { return images?.[0] || ''; }
+
+    openBulkImport() {
+        const modalRef = this.modalService.open(ProductsBulkImportComponent, { size: 'lg', centered: true, backdrop: 'static' });
+        modalRef.result.then(refresh => {
+            if (refresh) this.getDataList();
+        }).catch(() => {});
+    }
+
+    exportExcel() {
+        this.isExporting = true;
+        const filters: any = {};
+        if (this.filterCategoryId) filters.categoryId = this.filterCategoryId;
+        if (this.filterBrandId) filters.brandId = this.filterBrandId;
+
+        this.productsService.exportAll(filters).subscribe(
+            (res: any) => {
+                const rows = (res.data || []).map((p: any) => [
+                    p.name || '',
+                    p.slug || '',
+                    (p.description || '').replace(/\n/g, ' '),
+                    p.price ?? '',
+                    p.salePrice ?? '',
+                    p.categoryName || '',
+                    p.brandName || '',
+                    (p.images || []).join('|'),
+                    (p.tags || []).join('|'),
+                    p.isActive ? 'true' : 'false',
+                    p.sortOrder ?? 0
+                ]);
+                downloadExcel(
+                    `products_export_${new Date().toISOString().split('T')[0]}.xlsx`,
+                    ['name', 'slug', 'description', 'price', 'salePrice', 'categoryName', 'brandName', 'imageUrls', 'tags', 'isActive', 'sortOrder'],
+                    rows
+                );
+                this.isExporting = false;
+                this.sharedservice.showAlert(1, 'Products exported to Excel');
+            },
+            () => {
+                this.isExporting = false;
+                this.sharedservice.showAlert(2, 'Export failed');
+            }
+        );
+    }
 }

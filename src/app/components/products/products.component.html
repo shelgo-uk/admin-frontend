@@ -22,7 +22,15 @@
             Clear
         </button>
     </div>
-    <div class="page-top-btns-main d-flex justify-content-end">
+    <div class="page-top-btns-main d-flex justify-content-end flex-wrap gap-1">
+        <button class="site-btn grey-color" (click)="exportExcel()" [disabled]="isExporting">
+            <div class="site-btn-icon"><span><i class="fa-light fa-file-excel"></i></span></div>
+            {{ isExporting ? 'Exporting...' : 'Export Excel' }}
+        </button>
+        <button class="site-btn grey-color ms-1" (click)="openBulkImport()">
+            <div class="site-btn-icon"><span><i class="fa-light fa-file-import"></i></span></div>
+            Bulk Import
+        </button>
         <button class="site-btn dark-color ms-1" (click)="goToAdd()">
             <div class="site-btn-icon"><span><i class="fa-light fa-plus"></i></span></div>
             Add Product
