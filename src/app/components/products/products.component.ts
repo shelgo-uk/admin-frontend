@@ -103,7 +103,13 @@ export class ProductsComponent implements OnInit {
     getFirstImage(images: string[]): string { return images?.[0] || ''; }
 
     openBulkImport() {
-        const modalRef = this.modalService.open(ProductsBulkImportComponent, { size: 'lg', centered: true, backdrop: 'static' });
+        const modalRef = this.modalService.open(ProductsBulkImportComponent, {
+            size: 'xl',
+            centered: true,
+            backdrop: 'static',
+            scrollable: true,
+            windowClass: 'bulk-import-window'
+        });
         modalRef.result.then(refresh => {
             if (refresh) this.getDataList();
         }).catch(() => {});

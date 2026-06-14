@@ -236,6 +236,21 @@
                         </div>
                     </div>
 
+                    <div class="pf-two-col mt-3">
+                        <div class="pf-field">
+                            <label class="pf-label">Star Rating (0–5)</label>
+                            <input class="form-control" type="number" placeholder="e.g. 4.6"
+                                [(ngModel)]="model.avgRating" min="0" max="5" step="0.1" />
+                            <small class="pf-hint">Leave 0 to auto-generate on storefront (min 3.5)</small>
+                        </div>
+                        <div class="pf-field">
+                            <label class="pf-label">Review Count</label>
+                            <input class="form-control" type="number" placeholder="e.g. 128"
+                                [(ngModel)]="model.reviewCount" min="0" step="1" />
+                            <small class="pf-hint">Leave 0 to auto-generate on storefront</small>
+                        </div>
+                    </div>
+
                 </div>
             </div>
 

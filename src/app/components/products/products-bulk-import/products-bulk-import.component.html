@@ -1,59 +1,325 @@
-<div class="modal-header">
-  <h5 class="modal-title"><i class="fa-light fa-file-import me-2"></i>Bulk Import Products</h5>
-  <button type="button" class="btn-close" (click)="close()"></button>
-</div>
+<div class="bi-modal">
 
-<div class="modal-body bulk-import-body">
-  <p class="bulk-import-desc">
-    Upload a <strong>CSV</strong> or <strong>Excel (.xlsx)</strong> file with product rows.
-    Use the demo file to see the required columns.
-  </p>
-
-  <div class="bulk-demo-btns">
-    <button type="button" class="site-btn grey-color" (click)="downloadDemoCsv()">
-      <span class="site-btn-icon"><i class="fa-light fa-download"></i></span>
-      Download Demo CSV
-    </button>
-    <button type="button" class="site-btn grey-color ms-2" (click)="downloadDemoExcel()">
-      <span class="site-btn-icon"><i class="fa-light fa-file-excel"></i></span>
-      Download Demo Excel
-    </button>
-  </div>
-
-  <div class="bulk-columns-info">
-    <strong>Columns:</strong>
-    name, slug, description, price, salePrice, categoryName, brandName, imageUrls, tags, isActive, sortOrder
-    <br />
-    <small>imageUrls &amp; tags: separate multiple values with <code>|</code></small>
-  </div>
-
-  <div class="bulk-file-picker">
-    <input type="file" class="form-control" accept=".csv,.xlsx,.xls" (change)="onFileSelected($event)" />
-    <div class="text-muted mt-1" *ngIf="selectedFile">{{ selectedFile.name }}</div>
-  </div>
-
-  <div class="alert alert-danger py-2" *ngIf="parseError">{{ parseError }}</div>
-
-  <div class="bulk-result" *ngIf="importResult">
-    <div class="alert alert-success py-2">
-      Imported: <strong>{{ importResult.totalCreated }}</strong> |
-      Failed: <strong>{{ importResult.totalFailed }}</strong>
-    </div>
-    <div class="bulk-fail-list" *ngIf="importResult.failed?.length">
-      <div class="small text-danger" *ngFor="let f of importResult.failed">
-        Row {{ f.row }} ({{ f.name }}): {{ f.error }}
+  <!-- Header -->
+  <div class="bi-header">
+    <div class="bi-header-left">
+      <div class="bi-header-icon"><i class="fa-light fa-file-import"></i></div>
+      <div>
+        <h5 class="bi-title">Bulk Import Products</h5>
+        <p class="bi-subtitle">Upload CSV/Excel · Preview · Confirm import</p>
       </div>
     </div>
+    <button type="button" class="btn-close" (click)="close()"></button>
   </div>
-</div>
 
-<div class="modal-footer">
-  <button type="button" class="site-btn grey-color" (click)="close()">Cancel</button>
-  <button type="button" class="site-btn primary-color ms-2" [disabled]="isImporting || !selectedFile" (click)="importFile()">
-    <span class="site-btn-icon">
-      <i [class]="isImporting ? 'fa-light fa-spinner-third fa-spin' : 'fa-light fa-upload'"></i>
-    </span>
-    {{ isImporting ? 'Importing...' : 'Import Products' }}
-  </button>
-  <button type="button" class="site-btn dark-color ms-2" *ngIf="importResult?.totalCreated" (click)="close(true)">Done</button>
+  <!-- Step tracker -->
+  <div class="bi-steps">
+    <div class="bi-step-item" [class.active]="stepIndex >= 0" [class.done]="stepIndex > 0">
+      <span class="bi-step-dot">1</span>
+      <span class="bi-step-label">Setup</span>
+    </div>
+    <div class="bi-step-line" [class.done]="stepIndex > 0"></div>
+    <div class="bi-step-item" [class.active]="stepIndex >= 1" [class.done]="stepIndex > 1">
+      <span class="bi-step-dot">2</span>
+      <span class="bi-step-label">Preview</span>
+    </div>
+    <div class="bi-step-line" [class.done]="stepIndex > 1"></div>
+    <div class="bi-step-item" [class.active]="stepIndex >= 2">
+      <span class="bi-step-dot">3</span>
+      <span class="bi-step-label">Import</span>
+    </div>
+  </div>
+
+  <div class="bi-body">
+
+    <!-- ═══ SETUP ═══ -->
+    @if (step === 'setup') {
+      <div class="bi-grid">
+
+        <div class="bi-panel">
+          <div class="bi-panel-head">
+            <i class="fa-light fa-folder-tree"></i>
+            <span>Category &amp; Brand</span>
+          </div>
+          <div class="bi-panel-body">
+            <div class="bi-field">
+              <label>Category <sup>*</sup></label>
+              <select class="form-select" [(ngModel)]="categoryId" [disabled]="metaLoading">
+                <option [ngValue]="null">Select category…</option>
+                <option *ngFor="let c of allCategories" [ngValue]="c.id">
+                  {{ c.parentId ? '↳ ' : '' }}{{ c.name }}
+                </option>
+              </select>
+              <small>Applied to every row in this import</small>
+            </div>
+            <div class="bi-field">
+              <label>Brand</label>
+              <select class="form-select" [(ngModel)]="brandId" [disabled]="metaLoading">
+                <option [ngValue]="null">Optional — no brand</option>
+                <option *ngFor="let b of allBrands" [ngValue]="b.id">{{ b.name }}</option>
+              </select>
+            </div>
+            @if (categoryId) {
+              <div class="bi-target-chip">
+                <i class="fa-light fa-bullseye"></i>
+                {{ selectedCategoryName }}@if (brandId) { · {{ selectedBrandName }} }
+              </div>
+            }
+          </div>
+        </div>
+
+        <div class="bi-panel">
+          <div class="bi-panel-head">
+            <i class="fa-light fa-cloud-arrow-up"></i>
+            <span>Upload File</span>
+          </div>
+          <div class="bi-panel-body">
+            <div class="bi-dropzone"
+              (dragover)="preventDrop($event)"
+              (drop)="onFileDrop($event)"
+              [class.has-file]="!!selectedFile">
+              <input type="file" id="bulkFileInput" accept=".csv,.xlsx,.xls" (change)="onFileSelected($event)" hidden />
+              @if (!selectedFile) {
+                <i class="fa-light fa-file-arrow-up bi-drop-icon"></i>
+                <p>Drag &amp; drop CSV or Excel here</p>
+                <label for="bulkFileInput" class="bi-browse-btn">Browse file</label>
+              } @else {
+                <i class="fa-light fa-file-check bi-drop-icon ok"></i>
+                <p class="bi-file-name">{{ selectedFile.name }}</p>
+                <label for="bulkFileInput" class="bi-browse-btn ghost">Change file</label>
+              }
+            </div>
+            <div class="bi-demo-row">
+              <span>Need a template?</span>
+              <button type="button" class="bi-link-btn" (click)="downloadDemoCsv()">Demo CSV</button>
+              <button type="button" class="bi-link-btn" (click)="downloadDemoExcel()">Demo Excel</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <button type="button" class="bi-help-toggle" (click)="showHelp = !showHelp">
+        <i [class]="showHelp ? 'fa-light fa-chevron-up' : 'fa-light fa-circle-info'"></i>
+        {{ showHelp ? 'Hide' : 'Show' }} column guide
+      </button>
+
+      @if (showHelp) {
+        <div class="bi-help-box">
+          <p><strong>Columns in file</strong> (no category/brand): name, slug, description, price, salePrice, imageUrls, image1–image10, tags, isActive, sortOrder, avgRating, reviewCount</p>
+          <ul>
+            <li><strong>Images:</strong> pipe-separated in <code>imageUrls</code> OR use <code>image1</code>…<code>image10</code> columns — all merge together</li>
+            <li><strong>Tags:</strong> separate with <code>|</code></li>
+            <li><strong>Rating:</strong> leave 0 to auto-generate on storefront</li>
+          </ul>
+        </div>
+      }
+
+      @if (parseError) {
+        <div class="bi-alert bi-alert--error"><i class="fa-light fa-circle-xmark"></i> {{ parseError }}</div>
+      }
+    }
+
+    <!-- ═══ PREVIEW ═══ -->
+    @if (step === 'preview') {
+      <div class="bi-stats">
+        <div class="bi-stat">
+          <span class="bi-stat-val">{{ previewStats.total }}</span>
+          <span class="bi-stat-lbl">Total rows</span>
+        </div>
+        <div class="bi-stat bi-stat--ok">
+          <span class="bi-stat-val">{{ previewStats.valid }}</span>
+          <span class="bi-stat-lbl">Ready to import</span>
+        </div>
+        <div class="bi-stat" [class.bi-stat--err]="previewStats.invalid > 0">
+          <span class="bi-stat-val">{{ previewStats.invalid }}</span>
+          <span class="bi-stat-lbl">With errors</span>
+        </div>
+        <div class="bi-stat">
+          <span class="bi-stat-val">{{ previewStats.images }}</span>
+          <span class="bi-stat-lbl">Total images</span>
+        </div>
+        <div class="bi-stat bi-stat--meta">
+          <span class="bi-stat-lbl">Importing to</span>
+          <span class="bi-stat-meta">{{ selectedCategoryName }}@if (brandId) { · {{ selectedBrandName }} }</span>
+        </div>
+      </div>
+
+      @if (previewStats.invalid > 0) {
+        <div class="bi-alert bi-alert--warn">
+          <i class="fa-light fa-triangle-exclamation"></i>
+          Fix {{ previewStats.invalid }} row(s) with errors before importing. Go back, update your file, and preview again.
+        </div>
+      }
+
+      <div class="bi-preview-wrap">
+        <table class="bi-preview-table">
+          <thead>
+            <tr>
+              <th>#</th>
+              <th>Status</th>
+              <th>Product</th>
+              <th>Price</th>
+              <th>Images</th>
+              <th>Tags</th>
+              <th>Rating</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (row of previewRows; track row.rowNum) {
+              <tr [class.row-error]="!row.valid">
+                <td>{{ row.rowNum }}</td>
+                <td>
+                  @if (row.valid) {
+                    <span class="bi-badge bi-badge--ok"><i class="fa-light fa-check"></i> OK</span>
+                  } @else {
+                    <span class="bi-badge bi-badge--err" [ngbTooltip]="row.errors.join(' · ')">
+                      <i class="fa-light fa-xmark"></i> Error
+                    </span>
+                  }
+                </td>
+                <td>
+                  <div class="bi-prod-name">{{ row.name }}</div>
+                  @if (row.slug !== '—') { <div class="bi-prod-slug">{{ row.slug }}</div> }
+                  @if (!row.valid) {
+                    <div class="bi-row-errors">{{ row.errors.join(' · ') }}</div>
+                  }
+                </td>
+                <td>
+                  <div>{{ sharedservice.currency }}{{ row.price | number:'1.2-2' }}</div>
+                  @if (row.salePrice) {
+                    <div class="bi-sale">{{ sharedservice.currency }}{{ row.salePrice | number:'1.2-2' }}</div>
+                  }
+                </td>
+                <td>
+                  <span class="bi-img-count" [class.muted]="row.imageCount === 0">
+                    <i class="fa-light fa-image"></i> {{ row.imageCount }}
+                  </span>
+                </td>
+                <td>
+                  @for (t of row.tags.slice(0, 2); track t) {
+                    <span class="bi-tag">{{ t }}</span>
+                  }
+                  @if (row.tags.length > 2) { <span class="bi-tag-more">+{{ row.tags.length - 2 }}</span> }
+                  @if (!row.tags.length) { <span class="text-muted">—</span> }
+                </td>
+                <td>
+                  @if (row.avgRating > 0) {
+                    {{ row.avgRating }}★ ({{ row.reviewCount }})
+                  } @else {
+                    <span class="text-muted">Auto</span>
+                  }
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    }
+
+    <!-- ═══ IMPORTING ═══ -->
+    @if (step === 'importing') {
+      <div class="bi-importing">
+        <div class="bi-importing-spinner">
+          <i class="fa-light fa-spinner-third fa-spin"></i>
+        </div>
+        <h6>Importing {{ previewStats.valid }} product(s)…</h6>
+        <p>Please wait — do not close this window.</p>
+        <div class="bi-progress">
+          <div class="bi-progress-bar"></div>
+        </div>
+      </div>
+    }
+
+    <!-- ═══ DONE ═══ -->
+    @if (step === 'done' && importResult) {
+      <div class="bi-done">
+        <div class="bi-done-icon" [class.has-fail]="importResult.totalFailed > 0">
+          <i [class]="importResult.totalFailed ? 'fa-light fa-circle-check' : 'fa-light fa-party-horn'"></i>
+        </div>
+        <h5>Import Complete</h5>
+        <p>{{ importResult.totalCreated }} of {{ previewStats.valid }} products imported successfully</p>
+
+        <div class="bi-stats bi-stats--done">
+          <div class="bi-stat bi-stat--ok">
+            <span class="bi-stat-val">{{ importResult.totalCreated }}</span>
+            <span class="bi-stat-lbl">Imported</span>
+          </div>
+          <div class="bi-stat" [class.bi-stat--err]="importResult.totalFailed > 0">
+            <span class="bi-stat-val">{{ importResult.totalFailed || 0 }}</span>
+            <span class="bi-stat-lbl">Failed</span>
+          </div>
+          <div class="bi-stat">
+            <span class="bi-stat-val">{{ selectedCategoryName }}</span>
+            <span class="bi-stat-lbl">Category</span>
+          </div>
+        </div>
+
+        @if (importResult.created?.length) {
+          <div class="bi-done-list">
+            <div class="bi-done-list-head">Imported products</div>
+            @for (c of importResult.created; track c.id) {
+              <div class="bi-done-item">
+                <i class="fa-light fa-circle-check"></i>
+                <span>{{ c.name }}</span>
+                <span class="bi-done-id">#{{ c.id }}</span>
+              </div>
+            }
+          </div>
+        }
+
+        @if (importResult.failed?.length) {
+          <div class="bi-fail-box">
+            <div class="bi-fail-head"><i class="fa-light fa-circle-xmark"></i> Failed rows</div>
+            @for (f of importResult.failed; track f.row) {
+              <div class="bi-fail-item">Row {{ f.row }} · {{ f.name }} — {{ f.error }}</div>
+            }
+          </div>
+        }
+      </div>
+    }
+
+  </div>
+
+  <!-- Footer -->
+  <div class="bi-footer">
+    @if (step === 'setup') {
+      <button type="button" class="site-btn grey-color" (click)="close()">Cancel</button>
+      <button type="button" class="site-btn primary-color ms-auto"
+        [disabled]="!canReview || isParsing"
+        (click)="goToPreview()">
+        <span class="site-btn-icon">
+          <i [class]="isParsing ? 'fa-light fa-spinner-third fa-spin' : 'fa-light fa-eye'"></i>
+        </span>
+        {{ isParsing ? 'Reading file…' : 'Preview import' }}
+      </button>
+    }
+
+    @if (step === 'preview') {
+      <button type="button" class="site-btn grey-color" (click)="backToSetup()">
+        <span class="site-btn-icon"><i class="fa-light fa-arrow-left"></i></span>
+        Back
+      </button>
+      <button type="button" class="site-btn primary-color ms-auto"
+        [disabled]="!canConfirmImport"
+        (click)="confirmImport()">
+        <span class="site-btn-icon"><i class="fa-light fa-upload"></i></span>
+        Import {{ previewStats.valid }} product(s)
+      </button>
+    }
+
+    @if (step === 'importing') {
+      <button type="button" class="site-btn grey-color ms-auto" disabled>Importing…</button>
+    }
+
+    @if (step === 'done') {
+      <button type="button" class="site-btn grey-color" (click)="importAnother()">
+        <span class="site-btn-icon"><i class="fa-light fa-plus"></i></span>
+        Import more
+      </button>
+      <button type="button" class="site-btn primary-color ms-auto" (click)="close(true)">
+        Done — view products
+      </button>
+    }
+  </div>
+
 </div>

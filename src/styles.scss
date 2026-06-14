@@ -1479,3 +1479,14 @@ app-add-update-booking {
     left: calc(50% - 25px/2 + 13px);
     top: calc(50% - 23px/2);
 }
+
+.bulk-import-window .modal-content {
+    border: none;
+    border-radius: 12px;
+    overflow: hidden;
+    background: transparent;
+}
+
+.bulk-import-window .modal-body {
+    padding: 0;
+}

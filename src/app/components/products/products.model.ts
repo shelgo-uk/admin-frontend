@@ -11,6 +11,8 @@ export class ProductReqModel {
     tags: string[] = [];
     isActive: boolean = true;
     sortOrder: number = 0;
+    avgRating: number = 0;
+    reviewCount: number = 0;
 }
 
 export class ProductVariant {

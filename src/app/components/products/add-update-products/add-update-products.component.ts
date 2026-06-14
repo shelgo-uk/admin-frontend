@@ -78,6 +78,8 @@ export class AddUpdateProductsComponent implements OnInit {
                 this.model.tags        = [...(d.tags || [])];
                 this.model.isActive    = !!d.isActive;
                 this.model.sortOrder   = d.sortOrder || 0;
+                this.model.avgRating   = parseFloat(d.avgRating) || 0;
+                this.model.reviewCount = d.reviewCount || 0;
                 this.isPageLoading = false;
             },
             () => { this.router.navigate(['/products']); }

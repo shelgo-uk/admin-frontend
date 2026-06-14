@@ -1,26 +1,151 @@
 <app-breadcrumb [pageName]="'Dashboard'" [icon]="'grid-2'" />
-@if(dashboardData){
-    <div class="d-grid p-0 m-0 two-box">
-        <div class="dash-box-main">
-            <div class="dash-box-icon">
-                <i class="fa-regular fa-users"></i>
+
+@if(!isLoading && dashboardData) {
+<div class="dash">
+
+    <!-- KPI strip -->
+    <div class="dash-kpis">
+        @for (card of kpiCards; track card.label) {
+            <div class="dash-kpi" [class.dash-kpi--alert]="card.alert">
+                <div class="dash-kpi__icon"><i class="fa-regular" [class]="card.icon"></i></div>
+                <div class="dash-kpi__body">
+                    <span class="dash-kpi__label">{{ card.label }}</span>
+                    <span class="dash-kpi__value">{{ card.value }}</span>
+                    @if (card.hint) {
+                        <span class="dash-kpi__hint">{{ card.hint }}</span>
+                    }
+                </div>
             </div>
-            <div class="dash-box-ctx">
-                <div class="dash-box-count">{{dashboardData?.users || 0 | number}}</div>
-                <div class="dash-box-name">Users</div>
+        }
+    </div>
+
+    <!-- Chart + side panel -->
+    <div class="dash-row">
+        <div class="dash-panel dash-panel--chart">
+            <div class="dash-panel__head">
+                <div>
+                    <h6 class="dash-panel__title">Sales</h6>
+                    <span class="dash-panel__sub">{{ currency }}{{ summary.weekSales | number:'1.0-0' }} last 7 days</span>
+                </div>
+                <div class="dash-pills">
+                    @for (p of periodOptions; track p.key) {
+                        <button type="button"
+                            class="dash-pill"
+                            [class.active]="chartPeriod === p.key"
+                            (click)="setChartPeriod(p.key)">{{ p.label }}</button>
+                    }
+                </div>
             </div>
+            @if (salesChartOptions.series) {
+                <apx-chart
+                    [series]="salesChartOptions.series!"
+                    [chart]="salesChartOptions.chart!"
+                    [xaxis]="salesChartOptions.xaxis!"
+                    [yaxis]="salesChartOptions.yaxis!"
+                    [colors]="salesChartOptions.colors!"
+                    [dataLabels]="salesChartOptions.dataLabels!"
+                    [stroke]="salesChartOptions.stroke!"
+                    [grid]="salesChartOptions.grid!"
+                    [fill]="salesChartOptions.fill!">
+                </apx-chart>
+            }
         </div>
-        <div class="dash-box-main">
-            <div class="dash-box-icon">
-                <i class="fa-regular fa-list"></i>
-            </div>
-            <div class="dash-box-ctx">
-                <div class="dash-box-count">{{dashboardData?.submissions || 0 | number}}</div>
-                <div class="dash-box-name">Submissions</div>
-            </div>
+
+        <div class="dash-panel dash-panel--side">
+            <h6 class="dash-panel__title">Overview</h6>
+            <ul class="dash-meta">
+                @for (item of overviewItems; track item.label) {
+                    <li>
+                        <span>{{ item.label }}</span>
+                        <strong>{{ item.value }}</strong>
+                    </li>
+                }
+            </ul>
+
+            @if (statusItems.length) {
+                <h6 class="dash-panel__title dash-panel__title--sm">Order status</h6>
+                <ul class="dash-status">
+                    @for (s of statusItems; track s.status) {
+                        <li>
+                            <div class="dash-status__top">
+                                <span class="chip-badge" [class]="statusChipClass(s.status)">{{ formatStatus(s.status) }}</span>
+                                <span class="dash-status__count">{{ s.count }}</span>
+                            </div>
+                            <div class="dash-status__bar">
+                                <span [style.width.%]="statusPercent(s.count)"></span>
+                            </div>
+                        </li>
+                    }
+                </ul>
+            }
         </div>
     </div>
-}@else {
+
+    <!-- Tables -->
+    <div class="dash-row dash-row--tables">
+        <div class="dash-panel">
+            <div class="dash-panel__head dash-panel__head--flat">
+                <h6 class="dash-panel__title">Recent orders</h6>
+            </div>
+            @if (recentOrders.length) {
+                <div class="table-responsive">
+                    <table class="table table-bordered text-nowrap mb-0 dash-table">
+                        <thead>
+                            <tr>
+                                <th>Order</th>
+                                <th>Customer</th>
+                                <th>Total</th>
+                                <th>Status</th>
+                                <th>Date</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @for (o of recentOrders; track o.id) {
+                                <tr>
+                                    <td><span class="order-num">{{ o.orderNumber }}</span></td>
+                                    <td>
+                                        <div class="order-customer">
+                                            <div class="order-customer-name">{{ o.customerName }}</div>
+                                        </div>
+                                    </td>
+                                    <td><strong>{{ currency }}{{ o.total | number:'1.2-2' }}</strong></td>
+                                    <td><span class="chip-badge" [class]="statusChipClass(o.status)">{{ formatStatus(o.status) }}</span></td>
+                                    <td class="text-muted">{{ formatDate(o.createdAt) }}</td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            } @else {
+                <p class="dash-empty">No orders yet.</p>
+            }
+        </div>
+
+        <div class="dash-panel">
+            <div class="dash-panel__head dash-panel__head--flat">
+                <h6 class="dash-panel__title">Top products</h6>
+            </div>
+            @if (topProducts.length) {
+                <ul class="dash-products">
+                    @for (p of topProducts; track p.id; let i = $index) {
+                        <li>
+                            <span class="dash-products__rank">{{ i + 1 }}</span>
+                            <div class="dash-products__info">
+                                <span class="dash-products__name">{{ p.name }}</span>
+                                <span class="dash-products__qty">{{ p.quantitySold }} sold</span>
+                            </div>
+                            <strong class="dash-products__rev">{{ currency }}{{ p.revenue | number:'1.0-0' }}</strong>
+                        </li>
+                    }
+                </ul>
+            } @else {
+                <p class="dash-empty">No sales data yet.</p>
+            }
+        </div>
+    </div>
+
+</div>
+} @else {
     <app-box-view-skeleton></app-box-view-skeleton>
     <app-table-view-skeleton></app-table-view-skeleton>
 }
